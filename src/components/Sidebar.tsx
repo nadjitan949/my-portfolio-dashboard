@@ -32,7 +32,7 @@ function Sidebar() {
     { name: "Feedbacks", path: "/feedbacks", icon: <ThumbsUp size={20} /> },
     { name: "Temoignages", path: "/reviews", icon: <Hand size={20} /> },
     { name: "Messages", path: "/messages", icon: <MessageSquare size={20} /> },
-    { name: "Conversations", path: "/chat", icon: <Bot size={20} /> },
+    { name: "Conversations", path: "/chats", icon: <Bot size={20} /> },
   ]
 
   const handleLogout = () => {

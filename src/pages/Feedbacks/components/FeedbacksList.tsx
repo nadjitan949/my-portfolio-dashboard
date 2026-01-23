@@ -30,7 +30,7 @@ function FeedbacksList() {
     const handleEdit = (id: number) => navigate(`/feedbacks/update/${id}`)
 
     const triggerRefresh = () => {
-        setRefresh(true);
+        setRefresh(true)
         setTimeout(() => {
             setRefresh(false);
         }, 5000)

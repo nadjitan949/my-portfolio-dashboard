@@ -121,7 +121,7 @@ function Dashboard() {
             {isModalOpen && (
                 <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
                     <div className="bg-white rounded-3xl w-[70%] max-h-[80vh] overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b flex items-center justify-between bg-gray-50">
+                        <div className="p-6 flex items-center justify-between bg-gray-50">
                             <div>
                                 <h3 className="text-xl font-bold text-gray-900">Historique des visites</h3>
                                 <p className="text-sm text-gray-500">{stats.visits} visites enregistrées</p>

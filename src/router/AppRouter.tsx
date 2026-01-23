@@ -23,6 +23,7 @@ import MessageBox from "../pages/Messages/components/MessageBox"
 import Interest from "../pages/Interest/Interest"
 import InterestDetails from "../pages/Interest/components/InterestDetails"
 import Login from "../pages/Login/Login"
+import Chat from "../pages/Chat/Chat"
 
 function AppRouter() {
     return (
@@ -58,6 +59,7 @@ function AppRouter() {
             <Route path="/messages/details/:id" element={<MessageBox />} />
             <Route path="/interests" element={<Interest />} />
             <Route path="/interests/details/:id" element={<InterestDetails />} />
+            <Route path="/chats" element={<Chat />} />
         </Routes>
 
     )
