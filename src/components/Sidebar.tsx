@@ -12,7 +12,8 @@ import {
   ThumbsUp,
   Hand,
   Bot,
-  CheckCheck
+  CheckCheck,
+  Users2
 } from "lucide-react"
 import Button from "../ui/Button";
 
@@ -28,6 +29,7 @@ function Sidebar() {
     { name: "Languages", path: "/languages", icon: <Code size={20} /> },
     { name: "Projets", path: "/projets", icon: <Folder size={20} /> },
     { name: "Collaborateurs", path: "/collabs", icon: <Users size={20} /> },
+    { name: "Utilisateurs", path: "/users", icon: <Users2 size={20} /> },
     { name: "Interessé", path: "/interests", icon: <CheckCheck size={20} /> },
     { name: "Feedbacks", path: "/feedbacks", icon: <ThumbsUp size={20} /> },
     { name: "Temoignages", path: "/reviews", icon: <Hand size={20} /> },

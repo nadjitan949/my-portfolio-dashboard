@@ -26,6 +26,7 @@ import Login from "../pages/Login/Login"
 import Chat from "../pages/Chat/Chat"
 import ProtectedRoute from "../components/protectRoutes"
 import NotFound from "../pages/Notfound/NotFound"
+import Users from "../pages/Users/Users"
 
 function AppRouter() {
     return (
@@ -50,6 +51,7 @@ function AppRouter() {
                 <Route path="/collabs" element={<Collabs />} />
                 <Route path="/collabs/add" element={<CollabsForm />} />
                 <Route path="/collabs/update/:id" element={<CollabsForm />} />
+                <Route path="/users" element={<Users />} />
                 <Route path="/languages" element={<Languages />} />
                 <Route path="/languages/add" element={<LanguageForm />} />
                 <Route path="/languages/update/:id" element={<LanguageForm />} />

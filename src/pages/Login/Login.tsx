@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Mail, Lock, Eye, EyeOff, ShieldCheck, ArrowRight } from 'lucide-react'
 import api from '../../axios/api' // Assure-toi que le chemin est correct
+import Button from '../../ui/Button'
 
 function Login() {
     const navigate = useNavigate()
@@ -79,13 +80,13 @@ function Login() {
                                     className="w-full pl-12 pr-12 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-indigo-500/5 focus:border-indigo-500 outline-none transition-all text-sm"
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                 />
-                                <button
+                                <Button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
                                     className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500 transition-colors"
                                 >
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
