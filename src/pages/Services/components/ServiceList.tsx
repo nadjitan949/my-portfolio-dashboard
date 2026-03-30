@@ -3,16 +3,13 @@ import Button from "../../../ui/Button"
 import { useNavigate } from "react-router-dom"
 import { useEffect, useState } from "react"
 import api from "../../../axios/api"
+import Img from "../../../ui/Img"
 
-interface Image {
-    url: string
-    public_id: string
-}
 
 interface Service {
     id: number
     title: string
-    image: Image | null
+    image: string
     desciption: string
     details: string
 }
@@ -103,8 +100,8 @@ function ServiceList() {
                     >
                         {/* Image du service */}
                         <div className="h-48 overflow-hidden">
-                            <img
-                                src={service.image?.url}
+                            <Img
+                                src={service.image}
                                 alt={service.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                             />

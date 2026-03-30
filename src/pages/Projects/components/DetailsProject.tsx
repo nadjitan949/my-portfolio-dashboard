@@ -14,19 +14,15 @@ import {
 import { useNavigate, useParams } from "react-router-dom"
 import api from "../../../axios/api"
 import Button from "../../../ui/Button"
-
-interface Image {
-    url: string
-    public_id: string
-}
+import Img from "../../../ui/Img"
 
 
 interface Project {
     id: number;
     title: string;
-    computerView: Image | null
-    tabletteView: Image | null
-    mobileView: Image | null
+    computerView: string | null
+    tabletteView: string | null
+    mobileView: string | null
     collabTags: string[] | null
     tools: string[] | null
     description: string | ""
@@ -48,24 +44,36 @@ function DetalsProject() {
     const editProject = (id: number) => navigate(`/projets/update/${id}`)
 
     useEffect(() => {
-        const detailsProject = async () => {
-            try {
-
-                const res = await api.get(`/projects/details/${id}`)
-                if(!res.data.success){
-                    return alert(res.data.message)
-                }
-
-                const data: Project = res.data.project
-                setSelectedProject(data)
-                
-            } catch (error) {
-                console.log("Erreur: ", error)
+    const detailsProject = async () => {
+        try {
+            const res = await api.get(`/projects/details/${id}`)
+            
+            if (!res.data.success) {
+                return alert(res.data.message)
             }
-        }
 
-        detailsProject()
-    }, [id])
+            const rawData = res.data.project
+            
+            // On nettoie les données avant de les stocker
+            const formattedData: Project = {
+                ...rawData,
+                tools: typeof rawData.tools === 'string' 
+                    ? JSON.parse(rawData.tools) 
+                    : rawData.tools,
+                collabTags: typeof rawData.collabTags === 'string' 
+                    ? JSON.parse(rawData.collabTags) 
+                    : rawData.collabTags
+            }
+
+            setSelectedProject(formattedData)
+            
+        } catch (error) {
+            console.log("Erreur: ", error)
+        }
+    }
+
+    if (id) detailsProject()
+}, [id])
 
     const handleDelete = async () => {
         try {
@@ -185,7 +193,7 @@ function DetalsProject() {
                                 <p className="text-[10px] font-bold text-gray-400 mb-2 flex items-center gap-1 uppercase">Desktop View</p>
                                 <div className="rounded-xl border-4 border-gray-800 bg-gray-800 shadow-2xl overflow-hidden aspect-video">
                                     {selectedProject?.computerView ? (
-                                        <img src={selectedProject.computerView.url} className="w-full h-full object-cover" />
+                                        <Img src={selectedProject.computerView} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 italic">Aucun aperçu desktop</div>
                                     )}
@@ -198,7 +206,7 @@ function DetalsProject() {
                                     <p className="text-[10px] font-bold text-gray-400 mb-2 flex items-center gap-1 uppercase"><Tablet size={12} /> Tablet View</p>
                                     <div className="rounded-xl border-[6px] border-gray-800 bg-gray-800 shadow-xl overflow-hidden aspect-3/4">
                                         {selectedProject?.tabletteView ? (
-                                            <img src={selectedProject.tabletteView.url} className="w-full h-full object-cover" />
+                                            <Img src={selectedProject.tabletteView} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">N/A</div>
                                         )}
@@ -210,7 +218,7 @@ function DetalsProject() {
                                     <p className="text-[10px] font-bold text-gray-400 mb-2 flex items-center gap-1 uppercase"><Smartphone size={12} /> Mobile View</p>
                                     <div className="w-3/4 mx-auto rounded-4xl border-[6px] border-gray-800 bg-gray-800 shadow-xl overflow-hidden aspect-9/19">
                                         {selectedProject?.mobileView ? (
-                                            <img src={selectedProject.mobileView.url} className="w-full h-full object-cover" />
+                                            <Img src={selectedProject.mobileView} className="w-full h-full object-cover" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400">N/A</div>
                                         )}

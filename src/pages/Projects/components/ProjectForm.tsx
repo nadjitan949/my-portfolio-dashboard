@@ -92,9 +92,7 @@ function ProjectForm() {
     useEffect(() => {
         if (!isEditMode) return
         const fetchDetailsProject = async () => {
-
             try {
-
                 const res = await api.get(`/projects/details/${id}`)
                 if (!res.data.success) return alert(res.data.message)
 
@@ -104,25 +102,34 @@ function ProjectForm() {
                 setDescription(data.description)
                 setType(data.type)
                 setStatus(data.status)
-                setCollabTags(data.collabTags)
-                setTools(data.tools)
                 setGithub(data.github)
                 setLive(data.live)
-                setPreviews({
-                    computer: data.computerView.url,
-                    tablet: data.tabletteView.url,
-                    mobile: data.mobileView.url
 
+                // --- CORRECTION ICI : Désérialisation des tags ---
+                setCollabTags(
+                    typeof data.collabTags === 'string'
+                        ? JSON.parse(data.collabTags)
+                        : (data.collabTags || [])
+                )
+                setTools(
+                    typeof data.tools === 'string'
+                        ? JSON.parse(data.tools)
+                        : (data.tools || [])
+                )
+                // -----------------------------------------------
+
+                setPreviews({
+                    computer: data.computerView?.url || "",
+                    tablet: data.tabletteView?.url || "",
+                    mobile: data.mobileView?.url || ""
                 })
 
             } catch (error) {
                 console.log("Erreur: ", error)
             }
-
         }
 
         fetchDetailsProject()
-
     }, [id, isEditMode])
 
     const handleSubmit = async (e: React.FormEvent) => {

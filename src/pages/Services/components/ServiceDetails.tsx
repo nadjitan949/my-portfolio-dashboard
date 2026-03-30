@@ -3,16 +3,12 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import api from "../../../axios/api"
 import Button from "../../../ui/Button"
-
-interface Image {
-    url: string | ""
-    public_id: string | ""
-}
+import Img from "../../../ui/Img"
 
 interface Service {
     id: number | null
     title: string | ""
-    image: Image | null
+    image: string | undefined
     description: string | ""
     details: string | ""
 }
@@ -99,8 +95,8 @@ function ServiceDetails() {
                     {/* Colonne Gauche : Image et Résumé */}
                     <div className="space-y-6">
                         <div className="aspect-video w-full rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-                            <img
-                                src={service?.image?.url}
+                            <Img
+                                src={service?.image}
                                 alt={service?.title}
                                 className="w-full h-full object-cover"
                             />
@@ -122,9 +118,10 @@ function ServiceDetails() {
                             Description détaillée
                         </h2>
                         <div className="prose prose-blue max-w-none">
-                            <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-line">
-                                {service?.details}
-                            </p>
+                            <div
+                                className="text-gray-700 leading-relaxed text-lg break-words"
+                                dangerouslySetInnerHTML={{ __html: service?.details || "" }}
+                            />
                         </div>
                     </div>
 

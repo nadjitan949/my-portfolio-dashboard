@@ -11,11 +11,12 @@ import {
 import api from "../../../axios/api"
 import Button from "../../../ui/Button"
 import { useNavigate } from "react-router-dom"
+import Img from "../../../ui/Img"
 
 interface Project {
     id: number
     title: string
-    computerView: { url: string } | null
+    computerView: string
     collabTags: string[] | null
     tools: string[] | null
     desciption: string // Attention à la typo dans ton JSON (desciption)
@@ -48,8 +49,15 @@ function ListProjects() {
             try {
                 const res = await api.get("/projects/all")
                 if (res.data.success) {
-                    setProjects(res.data.projects)
+                    const formattedProjects = res.data.projects.map((project: Project) => ({
+                        ...project,
+                        tools: typeof project.tools === 'string' ? JSON.parse(project.tools) : project.tools,
+                        collabTags: typeof project.collabTags === 'string' ? JSON.parse(project.collabTags) : project.collabTags
+                    }))
+                    setProjects(formattedProjects)
                 }
+
+                console.log("Données: ", res.data.projects)
             } catch (error) {
                 console.error("Erreur:", error)
             } finally {
@@ -115,7 +123,7 @@ function ListProjects() {
                                         <div className="flex items-center gap-4">
                                             <div className="w-16 h-10 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                                                 {project.computerView ? (
-                                                    <img src={project.computerView.url} className="w-full h-full object-cover" />
+                                                    <Img src={project.computerView} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center text-gray-300"><Monitor size={16} /></div>
                                                 )}

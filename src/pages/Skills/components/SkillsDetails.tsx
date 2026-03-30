@@ -3,16 +3,12 @@ import { useEffect, useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import api from "../../../axios/api"
 import Button from "../../../ui/Button"
-
-interface Image {
-    url: string
-    public_id: string
-}
+import Img from "../../../ui/Img"
 
 interface Skills {
     id: number
     name: string
-    image: Image
+    image: string
     level: string
     description: string
     categoryId: number
@@ -99,9 +95,9 @@ function SkillsDetails() {
                 <div className="w-full md:w-1/3 flex flex-col items-center">
                     <div className="w-48 h-48 bg-slate-50 border-2 border-dashed border-gray-200 rounded-2xl flex items-center justify-center p-6 mb-4">
                         {/* Protection supplémentaire sur skill.image */}
-                        {skill.image?.url ? (
-                            <img 
-                                src={skill.image.url} 
+                        {skill.image ? (
+                            <Img 
+                                src={skill.image} 
                                 alt={skill.name} 
                                 className="max-w-full max-h-full object-contain" 
                             />
@@ -123,7 +119,7 @@ function SkillsDetails() {
                     <div>
                         <h1 className="text-4xl font-extrabold text-gray-900 mb-2">{skill.name}</h1>
                         <div className="flex items-center gap-2 text-indigo-600">
-                            {categorie?.icone}
+                            <div dangerouslySetInnerHTML={{ __html: categorie?.icone || "" }}/>
                             <span className="font-medium"> {categorie?.name} </span>
                         </div>
                     </div>

@@ -5,16 +5,12 @@ import Skills from '../Skills'
 import api from '../../../axios/api'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../ui/Button'
-
-interface Image {
-    url: string
-    public_id: string
-}
+import Img from '../../../ui/Img'
 
 interface Skills {
     id: number
     name: string
-    image: Image
+    image: string
     level: string
     description: string
     categoryId: number
@@ -93,7 +89,7 @@ function SkillsList() {
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 bg-gray-50 rounded-lg p-2">
                                         {skill.image ? (
-                                            <img src={skill.image.url} alt={skill.name} className="w-full h-full object-contain" />
+                                            <Img src={skill.image} alt={skill.name} className="w-full h-full object-contain" />
                                         ) : (
                                             <div className="text-gray-400 text-[10px] text-center">No Image</div>
                                         )}

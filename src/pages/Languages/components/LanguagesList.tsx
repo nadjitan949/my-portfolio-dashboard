@@ -3,16 +3,12 @@ import { useEffect, useState } from 'react'
 import api from '../../../axios/api'
 import Button from '../../../ui/Button'
 import { useNavigate } from 'react-router-dom'
-
-interface Icone {
-  url: string
-  public_id: string
-}
+import Img from '../../../ui/Img'
 
 interface Language {
   id: number
   name: string
-  icone: Icone
+  icone: string | undefined
 }
 
 function LanguagesList() {
@@ -97,8 +93,8 @@ function LanguagesList() {
               <tr key={lang.id} className="hover:bg-gray-50/50 transition-colors group">
                 <td className="px-6 py-4">
                   <div className="w-10 h-10 p-2 bg-white border border-gray-100 rounded-lg shadow-sm">
-                    <img
-                      src={lang.icone.url}
+                    <Img
+                      src={lang.icone}
                       alt={lang.name}
                       className="w-full h-full object-contain"
                     />

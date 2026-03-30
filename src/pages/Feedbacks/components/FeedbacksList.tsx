@@ -3,18 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import Button from '../../../ui/Button'
 import { useEffect, useState } from 'react'
 import api from '../../../axios/api'
-
-interface Image {
-    url: string,
-    public_id: string
-}
+import Img from '../../../ui/Img'
 
 interface Feedback {
     id: number
     author: string
     jobTitle: string
     content: string
-    image: Image | null
+    image: string | null
     createdAt: string
     updatedAt: string
 }
@@ -113,7 +109,7 @@ function FeedbacksList() {
                         <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
                             <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 overflow-hidden border border-gray-200">
                                 {fb.image ? (
-                                    <img src={fb.image.url} alt={fb.author} className="w-full h-full object-cover" />
+                                    <Img src={fb.image} alt={fb.author} className="w-full h-full object-cover" />
                                 ) : (
                                     <User size={24} />
                                 )}
