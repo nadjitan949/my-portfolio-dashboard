@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Mail, Phone, MessageSquare, Tag, Layout, Clock } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, MessageSquare, Tag, Clock } from 'lucide-react'
 import api from '../../../axios/api'
+import Img from '../../../ui/Img'
 
 interface Interest {
     id: number
@@ -13,7 +14,7 @@ interface Interest {
     Service: {
         id: number
         title: string
-        image: { url: string }
+        image: string
         description: string
         details: string
     }
@@ -112,14 +113,14 @@ function InterestDetails() {
                                 Service Concerné
                             </h3>
                         </div>
-                        <img 
-                            src={interest.Service.image.url} 
+                        <Img 
+                            src={interest.Service.image} 
                             alt={interest.Service.title} 
                             className="w-full h-48 object-cover"
                         />
                         <div className="p-6">
                             <h4 className="text-xl font-bold text-gray-900 mb-2">{interest.Service.title}</h4>
-                            <p className="text-sm text-gray-500 mb-4">{interest.Service.description}</p>
+                            {/* <p className="text-sm text-gray-500 mb-4">{interest.Service.description}</p>
                             
                             <div className="space-y-3 pt-4 border-t border-gray-100">
                                 <div className="flex items-start gap-3">
@@ -129,7 +130,7 @@ function InterestDetails() {
                                         <p className="text-sm text-gray-700 font-medium">{interest.Service.details}</p>
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
                 </div>

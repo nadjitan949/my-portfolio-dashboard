@@ -26,7 +26,7 @@ function Header() {
         {/* Profil Utilisateur */}
         <div className="flex items-center gap-3 cursor-pointer group">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-black group-hover:text-blue-600 transition-colors">Alex Dupont</p>
+            <p className="text-sm font-bold text-black group-hover:text-blue-600 transition-colors">Nadjitan Betan</p>
             <p className="text-xs text-gray-500">Administrateur</p>
           </div>
           <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white group-hover:bg-blue-600 transition-colors">

@@ -56,8 +56,6 @@ function ListProjects() {
                     }))
                     setProjects(formattedProjects)
                 }
-
-                console.log("Données: ", res.data.projects)
             } catch (error) {
                 console.error("Erreur:", error)
             } finally {
@@ -163,11 +161,11 @@ function ListProjects() {
 
                                     {/* Statut */}
                                     <td className="px-6 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${project.status === "terminate"
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${project.status === "Terminé"
                                             ? "bg-emerald-100 text-emerald-700"
                                             : "bg-amber-100 text-amber-700"
                                             }`}>
-                                            {project.status === "terminate" ? "Terminé" : "En cours"}
+                                            {project.status}
                                         </span>
                                     </td>
 

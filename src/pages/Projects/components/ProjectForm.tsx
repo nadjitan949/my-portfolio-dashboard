@@ -14,13 +14,14 @@ import Button from "../../../ui/Button"
 import Input from "../../../ui/Input"
 import api from "../../../axios/api";
 import { useNavigate, useParams } from "react-router-dom"
+import Img from "../../../ui/Img";
 
 function ProjectForm() {
 
     const [title, setTitle] = useState("")
     const [description, setDescription] = useState("")
     const [type, setType] = useState("web")
-    const [status, setStatus] = useState("terminate")
+    const [status, setStatus] = useState("Terminé")
     const [live, setLive] = useState("")
     const [github, setGithub] = useState("")
     const [loading, setLoading] = useState(false)
@@ -119,9 +120,9 @@ function ProjectForm() {
                 // -----------------------------------------------
 
                 setPreviews({
-                    computer: data.computerView?.url || "",
-                    tablet: data.tabletteView?.url || "",
-                    mobile: data.mobileView?.url || ""
+                    computer: data.computerView || "",
+                    tablet: data.tabletteView || "",
+                    mobile: data.mobileView || ""
                 })
 
             } catch (error) {
@@ -239,8 +240,8 @@ function ProjectForm() {
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 uppercase">Statut</label>
                                 <select className="w-full p-3 bg-gray-50 border border-gray-100 rounded-lg outline-none" value={status} onChange={(e) => setStatus(e.target.value)}>
-                                    <option value="terminate">Terminé</option>
-                                    <option value="in-progress">En cours</option>
+                                    <option value="Terminé">Terminé</option>
+                                    <option value="En cours">En cours</option>
                                 </select>
                             </div>
                         </div>
@@ -304,7 +305,7 @@ function ProjectForm() {
                                 </p>
                                 <label className="group block w-full aspect-video bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl hover:border-indigo-400 transition-all cursor-pointer overflow-hidden relative">
                                     {previews.computer ? (
-                                        <img src={previews.computer} className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-300" alt="Preview computer" />
+                                        <Img src={previews.computer} className="w-full h-full object-cover animate-in fade-in zoom-in-95 duration-300" alt="Preview computer" />
                                     ) : (
                                         <div className="flex flex-col items-center justify-center h-full text-gray-400 group-hover:text-indigo-500">
                                             <Plus size={32} />
@@ -324,7 +325,7 @@ function ProjectForm() {
                                     </p>
                                     <label className="group block w-full aspect-3/4 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl hover:border-indigo-400 transition-all cursor-pointer overflow-hidden relative">
                                         {previews.tablet ? (
-                                            <img src={previews.tablet} className="w-full h-full object-cover animate-in fade-in" alt="Preview tablet" />
+                                            <Img src={previews.tablet} className="w-full h-full object-cover animate-in fade-in" alt="Preview tablet" />
                                         ) : (
                                             <div className="flex flex-col items-center justify-center h-full text-gray-400">
                                                 <Plus size={24} />
@@ -342,7 +343,7 @@ function ProjectForm() {
                                     </p>
                                     <label className="group block w-full aspect-9/16 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl hover:border-indigo-400 transition-all cursor-pointer overflow-hidden relative">
                                         {previews.mobile ? (
-                                            <img src={previews.mobile} className="w-full h-full object-cover animate-in fade-in" alt="Preview mobile" />
+                                            <Img src={previews.mobile} className="w-full h-full object-cover animate-in fade-in" alt="Preview mobile" />
                                         ) : (
                                             <div className="flex flex-col items-center justify-center h-full text-gray-400">
                                                 <Plus size={24} />

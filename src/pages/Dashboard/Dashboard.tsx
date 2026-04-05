@@ -1,19 +1,21 @@
 import { useEffect, useState } from 'react'
-import { 
-    Users, Star, Code2, 
-     Mail, ExternalLink, 
+import {
+    Users, Star, Code2,
+    Mail, ExternalLink,
     MessageSquare, Eye, X, Globe, Clock, Calendar,
-    type LucideIcon
+    type LucideIcon,
+    Trash2,
 } from 'lucide-react'
 import api from '../../axios/api'
 import { useNavigate } from 'react-router-dom'
+import Button from '../../ui/Button';
 
 // Types
-interface Message { 
-    id: number; 
-    author: string; 
-    content: string; 
-    createdAt: string; 
+interface Message {
+    id: number;
+    author: string;
+    content: string;
+    createdAt: string;
 }
 
 interface Visit {
@@ -28,7 +30,7 @@ interface DashboardStats {
     messages: number
     reviews: string | number
     interests: number
-    visits: number 
+    visits: number
     visitsList: Visit[]
 }
 
@@ -41,7 +43,7 @@ interface StatCardProps {
 }
 
 const StatCard = ({ title, value, icon: Icon, color, onClick }: StatCardProps) => (
-    <div 
+    <div
         onClick={onClick}
         className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md hover:border-indigo-200 transition-all group"
     >
@@ -64,10 +66,18 @@ function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [currentDate, setCurrentDate] = useState(new Date())
     const [visitsList, setVisitsList] = useState<Visit[] | null>(null)
+    const [refresh, setRefresh] = useState(false)
+
+    const triggerRefresh = () => {
+        setRefresh(true);
+        setTimeout(() => {
+            setRefresh(false);
+        }, 5000); // 5000 ms = 5 secondes
+    };
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentDate(new Date()), 60000)
-        
+
         const fetchDashboardData = async () => {
             try {
                 // Seulement deux appels : un pour les stats (incluant les visites) et un pour les messages
@@ -96,17 +106,17 @@ function Dashboard() {
             try {
 
                 const res = await api.get("/visits/all")
-                if(!res.data.success) return alert(res.data.message)
+                if (!res.data.success) return alert(res.data.message)
 
                 const data: Visit[] = res.data.visitsList
                 setVisitsList(data)
-                
+
             } catch (error) {
                 console.log("Erreur: ", error)
             }
         }
         fetchVisits()
-    }, [])
+    }, [refresh])
 
     const formatDate = (dateString: string) => {
         return new Date(dateString).toLocaleDateString('fr-FR', {
@@ -114,6 +124,51 @@ function Dashboard() {
             month: 'short',
         })
     }
+
+    const deleteVisits = async (id: number) => {
+        try {
+
+            const isConfim = confirm("Voulez-vous vraiment supprimer ?")
+            if (!isConfim) return
+
+            const res = await api.delete(`/visits/delete/${id}`)
+            if (!res.data.success) return alert(res.data.message)
+
+            alert(res.data.message)
+
+            triggerRefresh()
+
+        } catch (error) {
+            console.log("Erreur: ", error)
+            alert("La visite n'a pas été supprimé");
+            triggerRefresh();
+        }
+    }
+
+    const deleteAllVisits = async () => {
+    if (!visitsList || visitsList.length === 0) return;
+
+    const isConfirm = confirm(`Voulez-vous supprimer les ${visitsList.length} visites de la liste ?`);
+    if (!isConfirm) return;
+
+    try {
+        // On crée un tableau de promesses pour supprimer tout en parallèle
+        const deletePromises = visitsList.map(visit => api.delete(`/visits/delete/${visit.id}`));
+        
+        // On attend que toutes les suppressions soient terminées
+        await Promise.all(deletePromises);
+
+        alert("Toutes les visites ont été supprimées avec succès.");
+        
+        // On rafraîchit les données
+        triggerRefresh();
+        
+    } catch (error) {
+        console.error("Erreur lors de la suppression groupée: ", error);
+        alert("Certaines visites n'ont pas pu être supprimées.");
+        triggerRefresh(); // On refresh quand même pour voir ce qui reste
+    }
+};
 
     return (
         <section className="space-y-8 relative">
@@ -126,9 +181,16 @@ function Dashboard() {
                                 <h3 className="text-xl font-bold text-gray-900">Historique des visites</h3>
                                 <p className="text-sm text-gray-500">{stats.visits} visites enregistrées</p>
                             </div>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                                <X size={20} />
-                            </button>
+                            <div className='flex items-center justify-center gap-2'>
+                                <Button onClick={() => deleteAllVisits()} className="p-2 px-4 hover:bg-red-100 text-red-500 rounded-sm transition-colors flex items-center justify-center gap-1">
+                                    <span className='text-sm font-medium'>Vider la liste des visites</span>
+                                    <Trash2/>
+                                </Button>
+
+                                <Button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
+                                    <X size={20} />
+                                </Button>
+                            </div>
                         </div>
                         <div className="overflow-y-auto p-6 max-h-[60vh] w-300 divide-y divide-gray-100">
                             {visitsList && visitsList.length > 0 ? (
@@ -149,6 +211,12 @@ function Dashboard() {
                                             <span className="text-[10px] text-gray-300 font-bold uppercase tracking-tighter">
                                                 {formatDate(visit.createdAt)}
                                             </span>
+                                        </div>
+
+                                        <div className=' '>
+                                            <Button onClick={() => deleteVisits(visit.id)} className='p-1 rounded-[5px] text-red-500 hover:bg-red-100'>
+                                                <Trash2 size={20} />
+                                            </Button>
                                         </div>
                                     </div>
                                 ))
@@ -227,7 +295,7 @@ function Dashboard() {
                             ))}
                         </div>
                     </div>
-                    
+
                     <div className="bg-linear-to-br from-indigo-600 to-indigo-700 rounded-3xl p-6 text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
                         <div className="relative z-10">
                             <h4 className="font-bold mb-2">Portfolio Pro</h4>

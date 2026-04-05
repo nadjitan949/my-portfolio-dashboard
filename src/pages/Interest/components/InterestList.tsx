@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react'
 import api from '../../../axios/api'
 import { useNavigate } from 'react-router-dom'
 import Button from '../../../ui/Button'
+import Img from '../../../ui/Img'
 
 interface Service {
     id: number
     title: string
-    image: { url: string }
+    image: string
 }
 
 interface Interest {
@@ -103,8 +104,8 @@ function InterestList() {
 
                         {/* Badge Service Intéressé */}
                         <div className="shrink-0 flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-xl shadow-sm lg:w-64">
-                            <img 
-                                src={item.Service.image.url} 
+                            <Img 
+                                src={item.Service.image} 
                                 alt={item.Service.title} 
                                 className="w-12 h-12 rounded-lg object-cover"
                             />

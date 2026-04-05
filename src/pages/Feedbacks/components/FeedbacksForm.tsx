@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../../axios/api'
 import Input from '../../../ui/Input'
 import Button from '../../../ui/Button'
+import Img from '../../../ui/Img'
 
 function FeedbacksForm() {
     const navigate = useNavigate()
@@ -37,7 +38,7 @@ function FeedbacksForm() {
                 setAuthor(res.data.feedback.author)
                 setJobTitle(res.data.feedback.jobTitle)
                 setContent(res.data.feedback.content)
-                setPreviewUrl(res.data.feedback.image.url)
+                setPreviewUrl(res.data.feedback.image)
 
             } catch (error) {
                 console.log("Erreur: ", error)
@@ -148,7 +149,7 @@ function FeedbacksForm() {
                             <div className="w-16 h-16 rounded-full bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group">
                                 {previewUrl ? (
                                     <>
-                                        <img src={previewUrl} alt="Auteur" className="w-full h-full object-cover" />
+                                        <Img src={previewUrl} alt="Auteur" className="w-full h-full object-cover" />
                                         <button
                                             type="button"
                                             onClick={() => { setPreviewUrl(null); setImageFile(null) }}
