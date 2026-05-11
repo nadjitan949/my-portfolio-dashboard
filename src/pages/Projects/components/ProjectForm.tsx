@@ -157,9 +157,7 @@ function ProjectForm() {
             setLoading(true)
 
             const res = isEditMode ? await api.put(`/projects/update/${id}`, formData,
-                { headers: { "Content-Type": "multipart/form-data" } }
             ) : await api.post("/projects/add", formData,
-                { headers: { "Content-Type": "multipart/form-data" } }
             )
 
             if (!res.data.success) {
