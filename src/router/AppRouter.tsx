@@ -27,48 +27,53 @@ import Chat from "../pages/Chat/Chat"
 import ProtectedRoute from "../components/protectRoutes"
 import NotFound from "../pages/Notfound/NotFound"
 import Users from "../pages/Users/Users"
+import CvManager from "../pages/Cv/CvManager"
+import BackgroundManager from "../pages/Background/BackgroundManager"
+import MainLayout from "../Layout/MainLayout"
 
 function AppRouter() {
     return (
-
         <Routes>
             <Route path="/" element={<Login />} />
             <Route element={<ProtectedRoute />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/services/:id" element={<ServiceDetails />} />
-                <Route path="/add-service" element={<AddService />} />
-                <Route path="/update-service/:id" element={<AddService />} />
-                <Route path="/categories" element={<Categories />} />
-                <Route path="/projets" element={<Projects />} />
-                <Route path="/projets/:id" element={<DetailsProject />} />
-                <Route path="/projets/add" element={<ProjectForm />} />
-                <Route path="/projets/update/:id" element={<ProjectForm />} />
-                <Route path="/competances" element={<Skills />} />
-                <Route path="/competances/:id" element={<SkillsDetails />} />
-                <Route path="/competances/add" element={<SkillsForm />} />
-                <Route path="/competances/update/:id" element={<SkillsForm />} />
-                <Route path="/collabs" element={<Collabs />} />
-                <Route path="/collabs/add" element={<CollabsForm />} />
-                <Route path="/collabs/update/:id" element={<CollabsForm />} />
-                <Route path="/users" element={<Users />} />
-                <Route path="/languages" element={<Languages />} />
-                <Route path="/languages/add" element={<LanguageForm />} />
-                <Route path="/languages/update/:id" element={<LanguageForm />} />
-                <Route path="/feedbacks" element={<Feedbacks />} />
-                <Route path="/feedbacks/add" element={<FeedbacksForm />} />
-                <Route path="/feedbacks/update/:id" element={<FeedbacksForm />} />
-                <Route path="/reviews" element={<Review />} />
-                <Route path="/reviews/add" element={<ReviewAdd />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/messages/details/:id" element={<MessageBox />} />
-                <Route path="/interests" element={<Interest />} />
-                <Route path="/interests/details/:id" element={<InterestDetails />} />
-                <Route path="/chats" element={<Chat />} />
-                <Route path="*" element={<NotFound />} />
+                <Route element={<MainLayout />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/services" element={<Services />} />
+                    <Route path="/services/:id" element={<ServiceDetails />} />
+                    <Route path="/add-service" element={<AddService />} />
+                    <Route path="/update-service/:id" element={<AddService />} />
+                    <Route path="/categories" element={<Categories />} />
+                    <Route path="/projets" element={<Projects />} />
+                    <Route path="/projets/:id" element={<DetailsProject />} />
+                    <Route path="/projets/add" element={<ProjectForm />} />
+                    <Route path="/projets/update/:id" element={<ProjectForm />} />
+                    <Route path="/competances" element={<Skills />} />
+                    <Route path="/competances/:id" element={<SkillsDetails />} />
+                    <Route path="/competances/add" element={<SkillsForm />} />
+                    <Route path="/competances/update/:id" element={<SkillsForm />} />
+                    <Route path="/collabs" element={<Collabs />} />
+                    <Route path="/collabs/add" element={<CollabsForm />} />
+                    <Route path="/collabs/update/:id" element={<CollabsForm />} />
+                    <Route path="/users" element={<Users />} />
+                    <Route path="/cv" element={<CvManager />} />
+                    <Route path="/background" element={<BackgroundManager />} />
+                    <Route path="/languages" element={<Languages />} />
+                    <Route path="/languages/add" element={<LanguageForm />} />
+                    <Route path="/languages/update/:id" element={<LanguageForm />} />
+                    <Route path="/feedbacks" element={<Feedbacks />} />
+                    <Route path="/feedbacks/add" element={<FeedbacksForm />} />
+                    <Route path="/feedbacks/update/:id" element={<FeedbacksForm />} />
+                    <Route path="/reviews" element={<Review />} />
+                    <Route path="/reviews/add" element={<ReviewAdd />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/messages/details/:id" element={<MessageBox />} />
+                    <Route path="/interests" element={<Interest />} />
+                    <Route path="/interests/details/:id" element={<InterestDetails />} />
+                    <Route path="/chats" element={<Chat />} />
+                    <Route path="*" element={<NotFound />} />
+                </Route>
             </Route>
         </Routes>
-
     )
 }
 
