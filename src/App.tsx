@@ -3,7 +3,7 @@ import AppRouter from "./router/AppRouter"
 
 function App() {
   return (
-    <BrowserRouter basename="/my-portfolio-dashboard">
+    <BrowserRouter>
       <AppRouter />
     </BrowserRouter>
   )
