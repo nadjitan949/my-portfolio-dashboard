@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useEffect, useState, useRef, type ChangeEvent, type FormEvent } from 'react'
 import { MessageSquare, User, Briefcase, Image as ImageIcon, Save, ArrowLeft, X, Loader2 } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../../axios/api'
@@ -25,6 +25,14 @@ function FeedbacksForm() {
 
     const goBack = () => navigate(-1)
 
+    // ✅ Ajouter une référence pour les previews
+    const previewUrlRef = useRef<string | null>(null)
+
+    // ✅ Mettre à jour la référence à chaque changement
+    useEffect(() => {
+        previewUrlRef.current = previewUrl
+    }, [previewUrl])
+
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
@@ -41,12 +49,14 @@ function FeedbacksForm() {
             }
 
             // Nettoyer l'ancienne URL blob
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl)
-            }
+            setPreviewUrl(prev => {
+                if (prev && prev.startsWith('blob:')) {
+                    URL.revokeObjectURL(prev)
+                }
+                return URL.createObjectURL(file)
+            })
 
             setImageFile(file)
-            setPreviewUrl(URL.createObjectURL(file))
         }
     }
 
@@ -69,24 +79,21 @@ function FeedbacksForm() {
                     addToast('error', 'Erreur', res.data.message)
                     return
                 }
-                setAuthor(res.data.feedback.author || '')
-                setJobTitle(res.data.feedback.jobTitle || '')
-                setContent(res.data.feedback.content || '')
                 
-                // Gérer l'image existante
-                const imageUrl = res.data.feedback.image
-                if (imageUrl) {
-                    if (typeof imageUrl === 'string') {
-                        const fullUrl = imageUrl.startsWith('http') 
-                            ? imageUrl 
-                            : `${api.defaults.baseURL || ''}${imageUrl}`
-                        setPreviewUrl(fullUrl)
-                    } else if (imageUrl.url) {
-                        const fullUrl = imageUrl.url.startsWith('http') 
-                            ? imageUrl.url 
-                            : `${api.defaults.baseURL || ''}${imageUrl.url}`
-                        setPreviewUrl(fullUrl)
-                    }
+                const feedbackData = res.data.feedback
+                setAuthor(feedbackData.author || '')
+                setJobTitle(feedbackData.jobTitle || '')
+                setContent(feedbackData.content || '')
+                
+                console.log('Feedback chargé:', feedbackData) // Debug
+                console.log('Image brute:', feedbackData.image) // Debug
+                
+                // ✅ CORRECTION SIMPLE : Passer directement la string
+                // Votre composant Img gère déjà le parsing JSON et les URLs Cloudinary
+                if (feedbackData.image) {
+                    setPreviewUrl(feedbackData.image)
+                } else {
+                    setPreviewUrl(null)
                 }
 
             } catch (error) {
@@ -100,14 +107,14 @@ function FeedbacksForm() {
         fetchDetailsFeedbacks()
     }, [id, isEditMode, addToast])
 
-    // Nettoyage des URLs blob au démontage
+    // ✅ Nettoyage avec la référence
     useEffect(() => {
         return () => {
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl)
+            if (previewUrlRef.current?.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrlRef.current)
             }
         }
-    }, [previewUrl])
+    }, [])
 
     const validateForm = () => {
         const newErrors: { author?: string; jobTitle?: string; content?: string } = {}
