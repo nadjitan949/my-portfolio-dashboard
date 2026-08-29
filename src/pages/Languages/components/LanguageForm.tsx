@@ -1,10 +1,11 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
-import { Code2, Upload, X, Save, ArrowLeft, Loader2 } from 'lucide-react'
+import { useEffect, useState, useRef, type ChangeEvent, type FormEvent } from 'react'
+import { Code2, Upload, X, Save, ArrowLeft, Loader2, ImagePlus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../../axios/api'
 import Input from '../../../ui/Input'
 import Button from '../../../ui/Button'
 import { useNotification } from '../../../hooks/useNotification'
+import Img from '../../../ui/Img'
 
 function LanguageForm() {
     const navigate = useNavigate()
@@ -23,6 +24,14 @@ function LanguageForm() {
 
     const goBack = () => navigate(-1)
 
+    // ✅ Ajouter une référence pour les previews
+    const previewUrlRef = useRef<string | null>(null)
+
+    // ✅ Mettre à jour la référence à chaque changement
+    useEffect(() => {
+        previewUrlRef.current = previewUrl
+    }, [previewUrl])
+
     const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
@@ -39,12 +48,14 @@ function LanguageForm() {
             }
 
             // Nettoyer l'ancienne URL de preview
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl)
-            }
+            setPreviewUrl(prev => {
+                if (prev && prev.startsWith('blob:')) {
+                    URL.revokeObjectURL(prev)
+                }
+                return URL.createObjectURL(file)
+            })
 
             setImageFile(file)
-            setPreviewUrl(URL.createObjectURL(file))
         }
     }
 
@@ -89,19 +100,20 @@ function LanguageForm() {
                     addToast('error', 'Erreur', res.data.message)
                     return
                 }
-                setName(res.data.language.name || '')
                 
-                // Gérer l'image existante
-                const iconData = res.data.language.icone
-                if (iconData) {
-                    const iconUrl = typeof iconData === 'string' ? iconData : iconData.url
-                    if (iconUrl) {
-                        const fullUrl = iconUrl.startsWith('http') 
-                            ? iconUrl 
-                            : `${api.defaults.baseURL || ''}${iconUrl}`
-                        setPreviewUrl(fullUrl)
-                    }
+                const languageData = res.data.language
+                setName(languageData.name || '')
+                
+                // ✅ CORRECTION SIMPLE : Passer directement la string
+                // Votre composant Img gère déjà le parsing JSON et les URLs Cloudinary
+                if (languageData.icone) {
+                    setPreviewUrl(languageData.icone)
+                } else {
+                    setPreviewUrl(null)
                 }
+
+                console.log('Langage chargé:', languageData) // Debug
+                console.log('Icône brute:', languageData.icone) // Debug
 
             } catch (error) {
                 console.error("Erreur: ", error)
@@ -114,14 +126,14 @@ function LanguageForm() {
         fetchDetailsLanguages()
     }, [id, isEditMode, addToast])
 
-    // Nettoyage de la preview lors du démontage
+    // ✅ Nettoyage avec la référence
     useEffect(() => {
         return () => {
-            if (previewUrl && previewUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(previewUrl)
+            if (previewUrlRef.current?.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrlRef.current)
             }
         }
-    }, [previewUrl])
+    }, [])
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
@@ -236,7 +248,8 @@ function LanguageForm() {
                                 <div className="w-20 h-20 md:w-24 md:h-24 border-2 border-dashed border-gray-200 rounded-xl flex items-center justify-center bg-white overflow-hidden relative group shrink-0">
                                     {previewUrl ? (
                                         <>
-                                            <img 
+                                            {/* ✅ Utiliser Img au lieu de img */}
+                                            <Img 
                                                 src={previewUrl} 
                                                 alt="Preview" 
                                                 className="w-12 h-12 md:w-16 md:h-16 object-contain"
@@ -251,7 +264,7 @@ function LanguageForm() {
                                             </Button>
                                         </>
                                     ) : (
-                                        <Code2 className="w-8 h-8 md:w-10 md:h-10 text-gray-300" />
+                                        <ImagePlus className="w-8 h-8 md:w-10 md:h-10 text-gray-300" />
                                     )}
                                 </div>
 

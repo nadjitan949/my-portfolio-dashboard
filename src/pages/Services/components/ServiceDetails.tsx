@@ -81,7 +81,6 @@ function ServiceDetails() {
         )
     }
 
-    // Formater la date
     const formatDate = (date?: string) => {
         if (!date) return ''
         return new Date(date).toLocaleDateString('fr-FR', {
@@ -91,10 +90,9 @@ function ServiceDetails() {
         })
     }
 
-    // État de chargement
     if (loading) {
         return (
-            <section className="w-full h-full min-h-[400px] bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex items-center justify-center">
+            <section className="w-full h-full min-h-100 bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex items-center justify-center">
                 <div className="text-center p-6 md:p-8">
                     <Loader2 className="w-8 h-8 md:w-10 md:h-10 animate-spin text-blue-600 mx-auto mb-3 md:mb-4" />
                     <p className="text-sm md:text-base text-gray-500 font-medium">Chargement du service...</p>
@@ -103,10 +101,9 @@ function ServiceDetails() {
         )
     }
 
-    // État d'erreur
     if (error && !service) {
         return (
-            <section className="w-full h-full min-h-[400px] bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col items-center justify-center p-4 md:p-8">
+            <section className="w-full h-full min-h-100 bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex flex-col items-center justify-center p-4 md:p-8">
                 <div className="text-center max-w-md w-full">
                     <div className="w-16 h-16 md:w-20 md:h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
                         <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-400" />
@@ -186,13 +183,13 @@ function ServiceDetails() {
                             {service?.title && (
                                 <div className="flex items-start gap-2 md:gap-3">
                                     <Tag className="w-4 h-4 md:w-5 md:h-5 text-blue-600 mt-1 shrink-0" />
-                                    <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-black leading-tight break-words">
+                                    <h1 className="text-xl md:text-2xl lg:text-3xl font-black text-black leading-tight wrap-break-words">
                                         {service.title}
                                     </h1>
                                 </div>
                             )}
                             {service?.description && (
-                                <p className="text-sm md:text-base lg:text-lg text-blue-600 font-medium leading-relaxed break-words">
+                                <p className="text-sm md:text-base lg:text-lg text-blue-600 font-medium leading-relaxed wrap-break-words">
                                     {service.description}
                                 </p>
                             )}
@@ -212,12 +209,12 @@ function ServiceDetails() {
                                 </span>
                             )}
                         </div>
-                        <div className="prose prose-blue max-w-none">
-                            <div
-                                className="text-gray-700 leading-relaxed text-sm md:text-base lg:text-lg break-words [&_img]:max-w-full [&_img]:h-auto [&_a]:text-blue-600 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_h1]:text-xl md:text-2xl [&_h1]:font-bold [&_h1]:mb-3 md:mb-4 [&_h2]:text-lg md:text-xl [&_h2]:font-bold [&_h2]:mb-2 md:mb-3 [&_h3]:text-base md:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 md:mb-4 [&_pre]:overflow-x-auto [&_pre]:max-w-full [&_table]:max-w-full [&_table]:overflow-x-auto"
-                                dangerouslySetInnerHTML={{ __html: service?.details || "<p>Aucune description détaillée disponible.</p>" }}
-                            />
-                        </div>
+                        
+                        {/* ✅ Utiliser une classe CSS personnalisée au lieu des sélecteurs Tailwind complexes */}
+                        <div 
+                            className="rich-text-content text-gray-700 leading-relaxed text-sm md:text-base lg:text-lg"
+                            dangerouslySetInnerHTML={{ __html: service?.details || "<p>Aucune description détaillée disponible.</p>" }}
+                        />
                     </div>
                 </div>
             </div>

@@ -81,3 +81,125 @@
   background-color: #cbd5e1;
   border-radius: 20px;
 }
+
+/* ============================================
+   Styles pour le contenu riche (description détaillée)
+   ============================================ */
+.rich-text-content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+}
+
+.rich-text-content p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+}
+
+.rich-text-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.rich-text-content a {
+    color: #2563eb;
+    text-decoration: underline;
+    word-break: break-all;
+}
+
+.rich-text-content ul {
+    list-style: disc;
+    padding-left: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.rich-text-content ol {
+    list-style: decimal;
+    padding-left: 1.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.rich-text-content h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    word-break: break-word;
+}
+
+.rich-text-content h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    word-break: break-word;
+}
+
+.rich-text-content h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    word-break: break-word;
+}
+
+.rich-text-content pre {
+    overflow-x: auto;
+    max-width: 100%;
+    background-color: #f3f4f6;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.rich-text-content code {
+    word-break: break-all;
+    font-size: 0.875rem;
+}
+
+.rich-text-content table {
+    max-width: 100%;
+    overflow-x: auto;
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.rich-text-content td,
+.rich-text-content th {
+    word-break: break-word;
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.rich-text-content blockquote {
+    border-left: 4px solid #d1d5db;
+    padding-left: 1rem;
+    font-style: italic;
+    margin-bottom: 0.75rem;
+}
+
+.rich-text-content iframe,
+.rich-text-content video {
+    max-width: 100%;
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+/* Responsive pour le contenu riche */
+@media (max-width: 640px) {
+    .rich-text-content h1 {
+        font-size: 1.25rem;
+    }
+    
+    .rich-text-content h2 {
+        font-size: 1.125rem;
+    }
+    
+    .rich-text-content h3 {
+        font-size: 1rem;
+    }
+    
+    .rich-text-content p {
+        font-size: 0.875rem;
+    }
+}

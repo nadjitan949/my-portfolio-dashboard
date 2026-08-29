@@ -139,7 +139,7 @@ function ReviewList() {
     }
 
     return (
-        <section className="w-full bg-white rounded-xl md:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <section className="w-full bg-white border border-gray-100 overflow-hidden">
             {/* Header */}
             <div className="p-4 md:p-5 lg:p-6 border-b border-gray-50 flex flex-col sm:flex-row justify-between sm:items-center gap-4 bg-gray-50/30">
                 <div className="flex items-center gap-3">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import type { ChangeEvent, FormEvent } from "react"
 import { ArrowLeft, ImagePlus, Save, Loader2 } from "lucide-react"
 import ReactQuill from "react-quill-new"
@@ -8,6 +8,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import Input from "../../../ui/Input"
 import api from "../../../axios/api"
 import { useNotification } from "../../../hooks/useNotification"
+import Img from "../../../ui/Img"
 
 interface ServiceForm {
     nom: string
@@ -17,15 +18,10 @@ interface ServiceForm {
     details: string
 }
 
-interface Image {
-    url: string
-    public_id: string
-}
-
 interface Service {
     id: number
     title: string
-    image: Image
+    image: string // ✅ Correction : image est une string (pas un objet)
     description: string
     details: string
 }
@@ -41,6 +37,7 @@ function AddService() {
 
     const [message, setMessage] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(false)
+    const [loadingData, setLoadingData] = useState<boolean>(false) // ✅ Ajouter loadingData
     const [isDragging, setIsDragging] = useState<boolean>(false)
 
     const navigate = useNavigate()
@@ -51,6 +48,14 @@ function AddService() {
     const isEditMode = Boolean(id)
 
     const GoBack = () => navigate(-1)
+
+    // ✅ Ajouter une référence pour les previews
+    const previewsRef = useRef(formData.preview)
+
+    // ✅ Mettre à jour la référence à chaque changement
+    useEffect(() => {
+        previewsRef.current = formData.preview
+    }, [formData.preview])
 
     // Gestion des inputs textuels classiques
     const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -118,39 +123,48 @@ function AddService() {
         if (message) setMessage("")
     }
 
+    // ✅ CORRECTION : Charger les détails du service en mode édition
     useEffect(() => {
         if (!isEditMode) return
 
-        const DetailsService = async () => {
+        const fetchDetailsService = async () => {
+            setLoadingData(true)
             try {
                 const res = await api.get(`/services/details/${id}`)
                 if (!res.data.success) {
-                    return setMessage(res.data.message)
+                    addToast('error', 'Erreur', res.data.message)
+                    return
                 }
 
-                const service: Service = res.data.service
+                const data: Service = res.data.service
+
+                console.log("Données du service:", data) // Debug
+                console.log("Image brute:", data.image) // Debug
+
                 setFormData({
-                    nom: service.title || "",
+                    nom: data.title || "",
                     image: null,
-                    preview: service.image?.url || "",
-                    description: service.description || "",
-                    details: service.details || ""
+                    preview: data.image || "", // ✅ Passer directement la string
+                    description: data.description || "",
+                    details: data.details || ""
                 })
 
             } catch (error) {
-                console.log("Erreur: ", error)
-                setMessage("❌ Impossible de charger les détails du service")
+                console.error("Erreur: ", error)
+                addToast('error', 'Erreur', 'Impossible de charger les détails')
+            } finally {
+                setLoadingData(false)
             }
         }
 
-        DetailsService()
-    }, [id, isEditMode, addToast]) // ✅ Correction : addToast ajouté
+        fetchDetailsService()
+    }, [id, isEditMode, addToast])
 
-    // Nettoyage de la preview lors du démontage
+    // ✅ Nettoyage avec la référence
     useEffect(() => {
         return () => {
-            if (formData.preview && formData.preview.startsWith('blob:')) {
-                URL.revokeObjectURL(formData.preview)
+            if (previewsRef.current && previewsRef.current.startsWith('blob:')) {
+                URL.revokeObjectURL(previewsRef.current)
             }
         }
     }, [])
@@ -199,6 +213,8 @@ function AddService() {
                 addToast('success', isEditMode ? 'Service modifié' : 'Service créé', 'Opération réussie !')
                 if (!isEditMode) {
                     setFormData({ nom: "", image: null, preview: "", description: "", details: "" })
+                } else {
+                    setTimeout(() => navigate('/services'), 500)
                 }
             } else {
                 setMessage(res.data.message || "Erreur lors de l'opération.")
@@ -211,6 +227,18 @@ function AddService() {
         }
     }
 
+    // ✅ État de chargement des données
+    if (loadingData) {
+        return (
+            <section className="w-full h-full bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden">
+                <div className="flex flex-col items-center justify-center h-full min-h-100 p-8">
+                    <Loader2 className="w-8 h-8 md:w-10 md:h-10 animate-spin text-indigo-600 mb-4" />
+                    <p className="text-gray-500">Chargement des données...</p>
+                </div>
+            </section>
+        )
+    }
+
     return (
         <section className="w-full h-full bg-white rounded-xl md:rounded-2xl shadow-sm">
             {/* Header */}
@@ -219,7 +247,6 @@ function AddService() {
                     onClick={GoBack} 
                     className="cursor-pointer px-4 md:px-6 py-2 flex items-center gap-2 w-fit bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl transition-all"
                 >
-                    {/* ✅ Correction */}
                     <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
                     <span className="hidden sm:inline">Retour</span>
                 </Button>
@@ -236,7 +263,7 @@ function AddService() {
             {/* Message d'alerte */}
             {message && (
                 <div className={`mx-4 md:mx-8 mt-4 p-3 md:p-4 rounded-lg text-xs md:text-sm font-medium flex items-start gap-2 ${
-                    message.includes('✅') 
+                    message.includes('✅') || message.includes('succès')
                         ? 'bg-green-50 text-green-700 border border-green-200' 
                         : 'bg-red-50 text-red-700 border border-red-200'
                 }`}>
@@ -256,7 +283,7 @@ function AddService() {
                     <div className="space-y-5 md:space-y-6">
                         <div>
                             <label className="block text-xs md:text-sm font-bold mb-2 uppercase tracking-wide text-gray-700">
-                                Nom du service
+                                Nom du service <span className="text-red-500">*</span>
                             </label>
                             <Input
                                 name="nom"
@@ -270,7 +297,7 @@ function AddService() {
 
                         <div>
                             <label className="block text-xs md:text-sm font-bold mb-2 uppercase tracking-wide text-gray-700">
-                                Description courte
+                                Description courte <span className="text-red-500">*</span>
                             </label>
                             <textarea
                                 name="description"
@@ -287,7 +314,7 @@ function AddService() {
 
                         <div>
                             <label className="block text-xs md:text-sm font-bold mb-2 uppercase tracking-wide text-gray-700">
-                                Image de couverture
+                                Image de couverture {!isEditMode && <span className="text-red-500">*</span>}
                             </label>
                             <div 
                                 className={`relative group border-2 border-dashed rounded-2xl h-56 md:h-64 lg:h-72 flex flex-col items-center justify-center transition-all cursor-pointer overflow-hidden ${
@@ -303,7 +330,7 @@ function AddService() {
                             >
                                 {formData.preview ? (
                                     <>
-                                        <img 
+                                        <Img 
                                             src={formData.preview} 
                                             alt="Preview" 
                                             className="w-full h-full object-cover"
@@ -316,7 +343,6 @@ function AddService() {
                                     </>
                                 ) : (
                                     <>
-                                        {/* ✅ Correction */}
                                         <ImagePlus className="w-8 h-8 md:w-10 md:h-10 text-gray-400 group-hover:text-blue-500 transition-colors" />
                                         <span className="text-xs md:text-sm text-gray-500 mt-2 text-center px-4">
                                             Cliquez ou glissez-déposez une image
@@ -333,13 +359,18 @@ function AddService() {
                                     accept="image/*"
                                 />
                             </div>
+                            {isEditMode && formData.preview && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                    Laissez vide pour conserver l'image actuelle
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     {/* Colonne droite : Éditeur riche */}
                     <div className="flex flex-col gap-2">
                         <label className="block text-xs md:text-sm font-bold mb-2 uppercase tracking-wide text-gray-700">
-                            Détails complets du service
+                            Détails complets du service <span className="text-red-500">*</span>
                         </label>
                         <div className="flex-1 min-h-75 md:min-h-100 border-2 border-gray-100 rounded-xl overflow-hidden focus-within:border-blue-500 transition-all bg-white">
                             <ReactQuill
@@ -369,13 +400,11 @@ function AddService() {
                             >
                                 {loading ? (
                                     <>
-                                        {/* ✅ Correction */}
                                         <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
                                         {isEditMode ? "Mise à jour..." : "Enregistrement..."}
                                     </>
                                 ) : (
                                     <>
-                                        {/* ✅ Correction */}
                                         <Save className="w-4 h-4 md:w-5 md:h-5" />
                                         {isEditMode ? "Mettre à jour le service" : "Enregistrer le service"}
                                     </>

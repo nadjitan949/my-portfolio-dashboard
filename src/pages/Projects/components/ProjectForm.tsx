@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     Save,
     X,
@@ -55,6 +55,14 @@ function ProjectForm() {
         mobile: ""
     })
 
+    // ✅ Ajouter une référence pour les previews
+    const previewsRef = useRef(previews)
+
+    // ✅ Mettre à jour la référence à chaque changement
+    useEffect(() => {
+        previewsRef.current = previews
+    }, [previews])
+
     // Fonctions pour gérer les tags
     const addTool = () => {
         const tool = currentTool.trim()
@@ -80,7 +88,7 @@ function ProjectForm() {
                 addToast('error', 'Erreur', 'Veuillez sélectionner une image valide')
                 return
             }
-            
+
             // Vérifier la taille (5MB max)
             if (file.size > 5 * 1024 * 1024) {
                 addToast('error', 'Erreur', "L'image ne doit pas dépasser 5MB")
@@ -114,7 +122,7 @@ function ProjectForm() {
 
     useEffect(() => {
         if (!isEditMode) return
-        
+
         const fetchDetailsProject = async () => {
             setLoadingData(true)
             try {
@@ -125,6 +133,11 @@ function ProjectForm() {
                 }
 
                 const data = res.data.project
+
+                console.log("Données du projet:", data) // Debug
+                console.log("computerView:", data.computerView) // Debug
+                console.log("tabletteView:", data.tabletteView) // Debug
+                console.log("mobileView:", data.mobileView) // Debug
 
                 setTitle(data.title || "")
                 setDescription(data.description || data.desciption || "")
@@ -145,23 +158,12 @@ function ProjectForm() {
                         : (data.tools || [])
                 )
 
-                // Gérer les URLs des images
-                const getFullUrl = (url: string) => {
-                    if (!url) return ""
-                    if (url.startsWith('http')) return url
-                    const base = api.defaults.baseURL || ''
-                    try {
-                        const origin = new URL(base).origin
-                        return `${origin}${url}`
-                    } catch {
-                        return url
-                    }
-                }
-
+                // ✅ CORRECTION SIMPLE : Passer directement les strings
+                // Votre composant Img gère déjà le parsing JSON et les URLs Cloudinary
                 setPreviews({
-                    computer: getFullUrl(data.computerView || ""),
-                    tablet: getFullUrl(data.tabletteView || ""),
-                    mobile: getFullUrl(data.mobileView || "")
+                    computer: data.computerView || "",
+                    tablet: data.tabletteView || "",
+                    mobile: data.mobileView || ""
                 })
 
             } catch (error) {
@@ -175,11 +177,11 @@ function ProjectForm() {
         fetchDetailsProject()
     }, [id, isEditMode, addToast])
 
-    // Nettoyage des URLs blob
+    // ✅ Nettoyage avec la référence (pas de dépendances)
     useEffect(() => {
         return () => {
-            Object.values(previews).forEach(url => {
-                if (url.startsWith('blob:')) {
+            Object.values(previewsRef.current).forEach(url => {
+                if (url && url.startsWith('blob:')) {
                     URL.revokeObjectURL(url)
                 }
             })
@@ -213,10 +215,10 @@ function ProjectForm() {
             if (files.tablet) formData.append("tabletteView", files.tablet)
             if (files.mobile) formData.append("mobileView", files.mobile)
 
-            const res = isEditMode 
+            const res = isEditMode
                 ? await api.put(`/projects/update/${id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
-                }) 
+                })
                 : await api.post("/projects/add", formData, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 })
@@ -253,9 +255,9 @@ function ProjectForm() {
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 border-b pb-4 md:pb-6">
                     <div className="flex items-center gap-3 md:gap-5">
-                        <Button 
-                            type="button" 
-                            onClick={goBack} 
+                        <Button
+                            type="button"
+                            onClick={goBack}
                             className="p-2 md:p-2.5 rounded-lg md:rounded-xl hover:bg-gray-100 cursor-pointer shrink-0"
                         >
                             <ArrowLeft className="w-4 h-4 md:w-5 md:h-5" />
@@ -270,13 +272,12 @@ function ProjectForm() {
                             </p>
                         </div>
                     </div>
-                    
-                    <Button 
+
+                    <Button
                         type="submit"
                         disabled={loading}
-                        className={`flex items-center justify-center gap-2 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl shadow-lg transition-all w-full sm:w-auto ${
-                            loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl'
-                        }`}
+                        className={`flex items-center justify-center gap-2 text-white px-6 md:px-8 py-2.5 md:py-3 rounded-lg md:rounded-xl shadow-lg transition-all w-full sm:w-auto ${loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl'
+                            }`}
                     >
                         {loading ? (
                             <>
@@ -299,11 +300,11 @@ function ProjectForm() {
                             <label className="text-xs md:text-sm font-bold text-gray-700 uppercase">
                                 Titre du projet <span className="text-red-500">*</span>
                             </label>
-                            <Input 
-                                placeholder="Ex: E-commerce App" 
-                                value={title} 
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)} 
-                                className="p-3 focus:outline-none rounded-lg md:rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-full text-sm md:text-base transition-all" 
+                            <Input
+                                placeholder="Ex: E-commerce App"
+                                value={title}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                                className="p-3 focus:outline-none rounded-lg md:rounded-xl border border-gray-200 bg-gray-50 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 w-full text-sm md:text-base transition-all"
                             />
                         </div>
 
@@ -320,17 +321,17 @@ function ProjectForm() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <label className="text-xs md:text-sm font-bold text-gray-700 uppercase">Type</label>
-                                <Input 
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl outline-none text-sm md:text-base focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all" 
-                                    value={type} 
-                                    onChange={(e) => setType(e.target.value)} 
+                                <Input
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl outline-none text-sm md:text-base focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                                    value={type}
+                                    onChange={(e) => setType(e.target.value)}
                                 />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-xs md:text-sm font-bold text-gray-700 uppercase">Statut</label>
-                                <select 
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl outline-none text-sm md:text-base focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer transition-all" 
-                                    value={status} 
+                                <select
+                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg md:rounded-xl outline-none text-sm md:text-base focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 cursor-pointer transition-all"
+                                    value={status}
                                     onChange={(e) => setStatus(e.target.value)}
                                 >
                                     <option value="Terminé">Terminé</option>
@@ -345,21 +346,21 @@ function ProjectForm() {
                         <div className="space-y-3">
                             <label className="text-xs md:text-sm font-bold text-gray-700 uppercase">Outils & Techs</label>
                             <div className="flex gap-2">
-                                <Input 
-                                    placeholder="Ajouter un outil (React, Node...)" 
-                                    value={currentTool} 
-                                    onChange={(e) => setCurrentTool(e.target.value)} 
+                                <Input
+                                    placeholder="Ajouter un outil (React, Node...)"
+                                    value={currentTool}
+                                    onChange={(e) => setCurrentTool(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault()
                                             addTool()
                                         }
                                     }}
-                                    className="rounded-lg md:rounded-xl w-full px-3 py-2.5 focus:outline-none bg-gray-50 border border-gray-200 text-sm md:text-base" 
+                                    className="rounded-lg md:rounded-xl w-full px-3 py-2.5 focus:outline-none bg-gray-50 border border-gray-200 text-sm md:text-base"
                                 />
-                                <Button 
-                                    type="button" 
-                                    onClick={addTool} 
+                                <Button
+                                    type="button"
+                                    onClick={addTool}
                                     className="p-2.5 md:p-3 bg-blue-500 hover:bg-blue-600 rounded-lg md:rounded-xl text-white transition-colors shrink-0"
                                 >
                                     <Plus className="w-4 h-4 md:w-5 md:h-5" />
@@ -369,7 +370,7 @@ function ProjectForm() {
                                 <div className="flex flex-wrap gap-2">
                                     {tools.map((tool, i) => (
                                         <span key={i} className="flex items-center gap-2 px-3 md:px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs md:text-sm font-bold">
-                                            {tool} 
+                                            {tool}
                                             <X className="w-3 h-3 md:w-3.5 md:h-3.5 cursor-pointer hover:text-red-500 transition-colors" onClick={() => removeTool(i)} />
                                         </span>
                                     ))}
@@ -380,21 +381,21 @@ function ProjectForm() {
                         <div className="space-y-3">
                             <label className="text-xs md:text-sm font-bold text-gray-700 uppercase">Collabs</label>
                             <div className="flex gap-2">
-                                <Input 
-                                    placeholder="Ajouter un collaborateur" 
-                                    value={currentTag} 
-                                    onChange={(e) => setCurrentTag(e.target.value)} 
+                                <Input
+                                    placeholder="Ajouter un collaborateur"
+                                    value={currentTag}
+                                    onChange={(e) => setCurrentTag(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter') {
                                             e.preventDefault()
                                             addTag()
                                         }
                                     }}
-                                    className="rounded-lg md:rounded-xl w-full px-3 py-2.5 focus:outline-none bg-gray-50 border border-gray-200 text-sm md:text-base" 
+                                    className="rounded-lg md:rounded-xl w-full px-3 py-2.5 focus:outline-none bg-gray-50 border border-gray-200 text-sm md:text-base"
                                 />
-                                <Button 
-                                    type="button" 
-                                    onClick={addTag} 
+                                <Button
+                                    type="button"
+                                    onClick={addTag}
                                     className="p-2.5 md:p-3 bg-blue-500 hover:bg-blue-600 rounded-lg md:rounded-xl text-white transition-colors shrink-0"
                                 >
                                     <Plus className="w-4 h-4 md:w-5 md:h-5" />
@@ -404,7 +405,7 @@ function ProjectForm() {
                                 <div className="flex flex-wrap gap-2">
                                     {collabTags.map((collab, i) => (
                                         <span key={i} className="flex items-center gap-2 px-3 md:px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg text-xs md:text-sm font-bold">
-                                            {collab} 
+                                            {collab}
                                             <X className="w-3 h-3 md:w-3.5 md:h-3.5 cursor-pointer hover:text-red-500 transition-colors" onClick={() => removeTags(i)} />
                                         </span>
                                     ))}
@@ -416,22 +417,22 @@ function ProjectForm() {
                             <h3 className="text-xs md:text-sm font-bold text-gray-400 uppercase tracking-widest">Liens du projet</h3>
                             <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg md:rounded-xl">
                                 <LinkIcon className="w-4 h-4 md:w-5 md:h-5 text-gray-400 shrink-0" />
-                                <input 
-                                    type="url" 
-                                    placeholder="URL Live" 
-                                    className="bg-transparent outline-none w-full text-sm md:text-base" 
-                                    value={live} 
-                                    onChange={(e) => setLive(e.target.value)} 
+                                <input
+                                    type="url"
+                                    placeholder="URL Live"
+                                    className="bg-transparent outline-none w-full text-sm md:text-base"
+                                    value={live}
+                                    onChange={(e) => setLive(e.target.value)}
                                 />
                             </div>
                             <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg md:rounded-xl">
                                 <Github className="w-4 h-4 md:w-5 md:h-5 text-gray-400 shrink-0" />
-                                <input 
-                                    type="url" 
-                                    placeholder="URL Github" 
-                                    className="bg-transparent outline-none w-full text-sm md:text-base" 
-                                    value={github} 
-                                    onChange={(e) => setGithub(e.target.value)} 
+                                <input
+                                    type="url"
+                                    placeholder="URL Github"
+                                    className="bg-transparent outline-none w-full text-sm md:text-base"
+                                    value={github}
+                                    onChange={(e) => setGithub(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -445,7 +446,7 @@ function ProjectForm() {
                         <div className="space-y-3">
                             <p className="text-xs font-semibold text-gray-500 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
-                                    <Monitor className="w-3.5 h-3.5 md:w-4 md:h-4" /> 
+                                    <Monitor className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                     Vue Ordinateur
                                 </span>
                                 {previews.computer && (
@@ -472,7 +473,7 @@ function ProjectForm() {
                             <div className="space-y-3">
                                 <p className="text-xs font-semibold text-gray-500 flex items-center justify-between">
                                     <span className="flex items-center gap-2">
-                                        <Tablet className="w-3.5 h-3.5 md:w-4 md:h-4" /> 
+                                        <Tablet className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                         Tablette
                                     </span>
                                     {previews.tablet && (
@@ -497,7 +498,7 @@ function ProjectForm() {
                             <div className="space-y-3">
                                 <p className="text-xs font-semibold text-gray-500 flex items-center justify-between">
                                     <span className="flex items-center gap-2">
-                                        <Smartphone className="w-3.5 h-3.5 md:w-4 md:h-4" /> 
+                                        <Smartphone className="w-3.5 h-3.5 md:w-4 md:h-4" />
                                         Mobile
                                     </span>
                                     {previews.mobile && (

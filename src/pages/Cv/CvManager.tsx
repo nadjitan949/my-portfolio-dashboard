@@ -68,7 +68,7 @@ function CvManager() {
     }
     loadCurrentPreview()
     return () => { if (objectUrl) URL.revokeObjectURL(objectUrl) }
-  }, [currentCv?.id, addToast])
+  }, [currentCv, addToast]) // ✅ Ajouter currentCv complet
 
   // Nettoyage des URLs blob au démontage
   useEffect(() => {
@@ -81,40 +81,40 @@ function CvManager() {
   const handleFileSelect = (files: FileList | null) => {
     if (!files || files.length === 0) return
     const file = files[0]
-    
+
     // Vérifier le type
     if (file.type !== 'application/pdf') {
       addToast('error', 'Format invalide', 'Seuls les fichiers PDF sont acceptés')
       return
     }
-    
+
     // Vérifier la taille
     if (file.size > MAX_FILE_SIZE) {
       addToast('error', 'Fichier trop volumineux', 'La taille maximale autorisée est de 10 Mo')
       return
     }
-    
+
     // Nettoyer l'ancienne preview
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl)
     }
-    
+
     setPreviewFile(file)
     setPreviewUrl(URL.createObjectURL(file))
   }
 
   const handleUploadConfirm = async () => {
     if (!previewFile) return
-    
+
     setLoading(true)
     const formData = new FormData()
     formData.append('cv', previewFile)
-    
+
     try {
       const res = await api.post('/cv/upload', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
-      
+
       if (res.data.success) {
         addToast('success', 'CV uploadé', 'Le fichier a été ajouté avec succès')
         cancelPreview()
@@ -138,10 +138,10 @@ function CvManager() {
 
   const handleDelete = () => {
     if (!currentCv) return
-    
+
     showConfirm(
-      'Supprimer le CV', 
-      `Voulez-vous vraiment supprimer "${currentCv.filename}" ? Cette action est irréversible.`, 
+      'Supprimer le CV',
+      `Voulez-vous vraiment supprimer "${currentCv.filename}" ? Cette action est irréversible.`,
       async () => {
         try {
           const res = await api.delete(`/cv/delete/${currentCv.id}`)
@@ -220,7 +220,7 @@ function CvManager() {
                 <X className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </div>
-            
+
             <div className="flex-1 overflow-auto p-4 md:p-5">
               <div className="bg-gray-50 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 flex items-center gap-3">
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-red-100 rounded-lg md:rounded-xl flex items-center justify-center shrink-0">
@@ -231,22 +231,22 @@ function CvManager() {
                   <p className="text-xs md:text-sm text-gray-500">{formatFileSize(previewFile.size)}</p>
                 </div>
               </div>
-              
+
               <div className="border border-gray-200 rounded-lg md:rounded-xl overflow-hidden h-64 md:h-96">
                 <iframe src={previewUrl} className="w-full h-full" title="PDF Preview" />
               </div>
             </div>
-            
+
             <div className="p-4 md:p-5 border-t border-gray-100 flex flex-col sm:flex-row justify-end gap-2 md:gap-3">
-              <button 
-                onClick={cancelPreview} 
+              <button
+                onClick={cancelPreview}
                 className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg md:rounded-xl transition-colors"
               >
                 Annuler
               </button>
-              <button 
-                onClick={handleUploadConfirm} 
-                disabled={loading} 
+              <button
+                onClick={handleUploadConfirm}
+                disabled={loading}
                 className="w-full sm:w-auto px-5 py-2.5 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg md:rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
@@ -272,18 +272,17 @@ function CvManager() {
         onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => { e.preventDefault(); setDragOver(false); handleFileSelect(e.dataTransfer.files) }}
-        className={`mb-4 md:mb-6 border-2 border-dashed rounded-xl md:rounded-2xl p-6 md:p-10 text-center transition-all cursor-pointer ${
-          dragOver 
-            ? 'border-indigo-400 bg-indigo-50 scale-[1.01]' 
+        className={`mb-4 md:mb-6 border-2 border-dashed rounded-xl md:rounded-2xl p-6 md:p-10 text-center transition-all cursor-pointer ${dragOver
+            ? 'border-indigo-400 bg-indigo-50 scale-[1.01]'
             : 'border-gray-200 bg-white hover:border-indigo-300 hover:bg-indigo-50/50'
-        }`}
+          }`}
       >
-        <input 
-          ref={fileInputRef} 
-          type="file" 
-          accept=".pdf,application/pdf" 
-          className="hidden" 
-          onChange={(e) => handleFileSelect(e.target.files)} 
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,application/pdf"
+          className="hidden"
+          onChange={(e) => handleFileSelect(e.target.files)}
         />
         <Upload className={`w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 ${dragOver ? 'text-indigo-500' : 'text-gray-300'}`} />
         <p className="text-sm md:text-base font-medium text-gray-700">
@@ -318,23 +317,23 @@ function CvManager() {
               </p>
             </div>
             <div className="flex items-center gap-1 shrink-0">
-              <button 
-                onClick={handleDownload} 
-                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" 
+              <button
+                onClick={handleDownload}
+                className="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                 title="Télécharger"
               >
                 <Download className="w-4 h-4 md:w-5 md:h-5" />
               </button>
-              <button 
-                onClick={handleDelete} 
-                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" 
+              <button
+                onClick={handleDelete}
+                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                 title="Supprimer"
               >
                 <Trash2 className="w-4 h-4 md:w-5 md:h-5" />
               </button>
             </div>
           </div>
-          
+
           <div className="p-3 md:p-4">
             {loadingCurrentPreview ? (
               <div className="h-64 md:h-96 flex items-center justify-center bg-gray-50 rounded-xl">

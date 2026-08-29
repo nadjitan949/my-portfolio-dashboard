@@ -393,7 +393,7 @@ function ListProjects() {
 
                                     {/* Outils */}
                                     {project.tools && project.tools.length > 0 && (
-                                        <div className="hidden md:flex flex-wrap gap-1 max-w-[200px]">
+                                        <div className="hidden md:flex flex-wrap gap-1 max-w-50">
                                             {project.tools.slice(0, 3).map((tool, i) => (
                                                 <span key={i} className="px-2 py-0.5 bg-gray-100 text-[10px] rounded text-gray-600 font-medium">
                                                     {tool}

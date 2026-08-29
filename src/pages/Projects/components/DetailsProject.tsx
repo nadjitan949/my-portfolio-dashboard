@@ -60,19 +60,6 @@ function DetalsProject() {
         })
     }
 
-    // Construire l'URL complète
-    const getFullUrl = (url: string | null) => {
-        if (!url) return ''
-        if (url.startsWith('http')) return url
-        const base = api.defaults.baseURL || ''
-        try {
-            const origin = new URL(base).origin
-            return `${origin}${url}`
-        } catch {
-            return url
-        }
-    }
-
     useEffect(() => {
         const detailsProject = async () => {
             setLoading(true)
@@ -87,6 +74,11 @@ function DetalsProject() {
                 }
 
                 const rawData = res.data.project
+                
+                console.log("Données du projet:", rawData) // Debug
+                console.log("computerView:", rawData.computerView) // Debug
+                console.log("tabletteView:", rawData.tabletteView) // Debug
+                console.log("mobileView:", rawData.mobileView) // Debug
                 
                 // Nettoyage des données
                 const formattedData: Project = {
@@ -312,7 +304,8 @@ function DetalsProject() {
                                 </p>
                                 <div className="rounded-lg md:rounded-xl border-4 border-gray-800 bg-gray-800 shadow-xl md:shadow-2xl overflow-hidden aspect-video">
                                     {selectedProject?.computerView ? (
-                                        <Img src={getFullUrl(selectedProject.computerView)} className="w-full h-full object-cover" alt="Vue desktop" />
+                                        // ✅ Utiliser directement la string sans getFullUrl
+                                        <Img src={selectedProject.computerView} className="w-full h-full object-cover" alt="Vue desktop" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 italic text-sm md:text-base">
                                             Aucun aperçu desktop
@@ -329,7 +322,8 @@ function DetalsProject() {
                                     </p>
                                     <div className="rounded-lg md:rounded-xl border-4 md:border-[6px] border-gray-800 bg-gray-800 shadow-lg md:shadow-xl overflow-hidden aspect-3/4 max-w-75 mx-auto w-full">
                                         {selectedProject?.tabletteView ? (
-                                            <Img src={getFullUrl(selectedProject.tabletteView)} className="w-full h-full object-cover" alt="Vue tablette" />
+                                            // ✅ Utiliser directement la string
+                                            <Img src={selectedProject.tabletteView} className="w-full h-full object-cover" alt="Vue tablette" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs md:text-sm">
                                                 N/A
@@ -345,7 +339,8 @@ function DetalsProject() {
                                     </p>
                                     <div className="rounded-2xl md:rounded-3xl border-4 md:border-[6px] border-gray-800 bg-gray-800 shadow-lg md:shadow-xl overflow-hidden aspect-9/19 max-w-50 mx-auto w-full">
                                         {selectedProject?.mobileView ? (
-                                            <Img src={getFullUrl(selectedProject.mobileView)} className="w-full h-full object-cover" alt="Vue mobile" />
+                                            // ✅ Utiliser directement la string
+                                            <Img src={selectedProject.mobileView} className="w-full h-full object-cover" alt="Vue mobile" />
                                         ) : (
                                             <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs md:text-sm">
                                                 N/A
