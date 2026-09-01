@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react'
-import type { FormEvent, ChangeEvent } from 'react'
-import { UserPlus, Briefcase, Link, ArrowLeft, Save, Loader2, X } from 'lucide-react'
+import { useEffect, useState, useRef, type FormEvent, type ChangeEvent } from 'react'
+import { UserPlus, Briefcase, Link, ArrowLeft, Save, Loader2, X, Upload } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../../../axios/api'
 import Input from '../../../ui/Input'
 import Button from '../../../ui/Button'
+import Img from '../../../ui/Img'
 import { useNotification } from '../../../hooks/useNotification'
 
 interface Collaborator {
@@ -12,6 +12,7 @@ interface Collaborator {
     fullname: string
     jobTitle: string
     link: string
+    image: string | null
 }
 
 function CollabsForm() {
@@ -22,7 +23,10 @@ function CollabsForm() {
     const [fullname, setFullname] = useState('')
     const [jobTitle, setJobTitle] = useState('')
     const [link, setLink] = useState('')
+    const [imageFile, setImageFile] = useState<File | null>(null)
+    const [previewUrl, setPreviewUrl] = useState<string | null>(null)
     const [errors, setErrors] = useState<{ fullname?: string; jobTitle?: string; link?: string }>({})
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const { id } = useParams()
     const isEditMode = Boolean(id)
@@ -44,6 +48,12 @@ function CollabsForm() {
                 setFullname(data.fullname || '')
                 setJobTitle(data.jobTitle || '')
                 setLink(data.link || '')
+                // ✅ Passer directement la string à previewUrl
+                if (data.image) {
+                    setPreviewUrl(data.image)
+                } else {
+                    setPreviewUrl(null)
+                }
 
             } catch (error) {
                 console.error("Erreur: ", error)
@@ -56,96 +66,78 @@ function CollabsForm() {
         fetchDetails()
     }, [id, isEditMode, addToast])
 
-    // Validation en temps réel
+    const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            if (!file.type.startsWith('image/')) {
+                addToast('error', 'Erreur', 'Veuillez sélectionner une image valide')
+                return
+            }
+            if (file.size > 2 * 1024 * 1024) {
+                addToast('error', 'Erreur', "L'image ne doit pas dépasser 2MB")
+                return
+            }
+
+            if (previewUrl && previewUrl.startsWith('blob:')) {
+                URL.revokeObjectURL(previewUrl)
+            }
+            setImageFile(file)
+            setPreviewUrl(URL.createObjectURL(file))
+        }
+    }
+
+    const clearImage = () => {
+        if (previewUrl && previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(previewUrl)
+        }
+        setImageFile(null)
+        setPreviewUrl(null)
+        if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+
+    // Validation (inchangée)
     const validateField = (field: 'fullname' | 'jobTitle' | 'link', value: string) => {
         const newErrors = { ...errors }
-        
         if (field === 'fullname') {
-            if (!value.trim()) {
-                newErrors.fullname = "Le nom complet est obligatoire"
-            } else if (value.trim().length < 3) {
-                newErrors.fullname = "Le nom doit contenir au moins 3 caractères"
-            } else {
-                delete newErrors.fullname
-            }
+            if (!value.trim()) newErrors.fullname = "Le nom complet est obligatoire"
+            else if (value.trim().length < 3) newErrors.fullname = "Le nom doit contenir au moins 3 caractères"
+            else delete newErrors.fullname
         }
-        
         if (field === 'jobTitle') {
-            if (!value.trim()) {
-                newErrors.jobTitle = "L'intitulé du poste est obligatoire"
-            } else if (value.trim().length < 2) {
-                newErrors.jobTitle = "L'intitulé doit contenir au moins 2 caractères"
-            } else {
-                delete newErrors.jobTitle
-            }
+            if (!value.trim()) newErrors.jobTitle = "L'intitulé du poste est obligatoire"
+            else if (value.trim().length < 2) newErrors.jobTitle = "L'intitulé doit contenir au moins 2 caractères"
+            else delete newErrors.jobTitle
         }
-        
         if (field === 'link') {
-            if (value && !/^https?:\/\/.+/.test(value)) {
-                newErrors.link = "Le lien doit commencer par http:// ou https://"
-            } else {
-                delete newErrors.link
-            }
+            if (value && !/^https?:\/\/.+/.test(value)) newErrors.link = "Le lien doit commencer par http:// ou https://"
+            else delete newErrors.link
         }
-        
         setErrors(newErrors)
-    }
-
-    const handleFullnameChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setFullname(value)
-        validateField('fullname', value)
-    }
-
-    const handleJobTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setJobTitle(value)
-        validateField('jobTitle', value)
-    }
-
-    const handleLinkChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value
-        setLink(value)
-        validateField('link', value)
     }
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault()
-        
-        // Validation finale
-        const finalErrors: { fullname?: string; jobTitle?: string; link?: string } = {}
-        
-        if (!fullname.trim()) {
-            finalErrors.fullname = "Le nom complet est obligatoire"
-        } else if (fullname.trim().length < 3) {
-            finalErrors.fullname = "Le nom doit contenir au moins 3 caractères"
-        }
-        
-        if (!jobTitle.trim()) {
-            finalErrors.jobTitle = "L'intitulé du poste est obligatoire"
-        }
-        
-        if (link && !/^https?:\/\/.+/.test(link)) {
-            finalErrors.link = "Le lien doit commencer par http:// ou https://"
-        }
-        
-        if (Object.keys(finalErrors).length > 0) {
-            setErrors(finalErrors)
-            return
-        }
+        const finalErrors: typeof errors = {}
+        if (!fullname.trim()) finalErrors.fullname = "Le nom complet est obligatoire"
+        else if (fullname.trim().length < 3) finalErrors.fullname = "Le nom doit contenir au moins 3 caractères"
+        if (!jobTitle.trim()) finalErrors.jobTitle = "L'intitulé du poste est obligatoire"
+        if (link && !/^https?:\/\/.+/.test(link)) finalErrors.link = "Le lien doit commencer par http:// ou https://"
+        if (Object.keys(finalErrors).length > 0) { setErrors(finalErrors); return }
 
         setLoading(true)
         try {
+            const formData = new FormData()
+            formData.append('fullname', fullname.trim())
+            formData.append('jobTitle', jobTitle.trim())
+            formData.append('link', link.trim())
+            if (imageFile) formData.append('image', imageFile)
+
             const res = isEditMode 
-                ? await api.put(`/collabs/update/${id}`, {
-                    fullname: fullname.trim(),
-                    jobTitle: jobTitle.trim(),
-                    link: link.trim()
+                ? await api.put(`/collabs/update/${id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 }) 
-                : await api.post("/collabs/add", {
-                    fullname: fullname.trim(),
-                    jobTitle: jobTitle.trim(),
-                    link: link.trim()
+                : await api.post("/collabs/add", formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
                 })
 
             if (res.data.success) {
@@ -161,14 +153,6 @@ function CollabsForm() {
         }
     }
 
-    const handleReset = () => {
-        setFullname('')
-        setJobTitle('')
-        setLink('')
-        setErrors({})
-    }
-
-    // État de chargement
     if (loadingData) {
         return (
             <section className="w-full h-full bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden flex items-center justify-center">
@@ -182,7 +166,7 @@ function CollabsForm() {
 
     return (
         <section className="w-full h-full bg-white rounded-xl md:rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-            {/* Header du Formulaire */}
+            {/* Header */}
             <div className="p-4 md:p-6 bg-gray-50 border-b flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <div className="hidden sm:flex w-10 h-10 md:w-12 md:h-12 bg-indigo-50 rounded-xl items-center justify-center">
@@ -218,23 +202,16 @@ function CollabsForm() {
                         type="text"
                         placeholder="ex: Jonathan Doe"
                         value={fullname}
-                        onChange={handleFullnameChange}
+                        onChange={(e) => { setFullname(e.target.value); validateField('fullname', e.target.value) }}
                         className={`w-full border p-2.5 md:p-3 rounded-lg md:rounded-[10px] focus:outline-none focus:ring-2 transition-all text-sm md:text-base ${
-                            errors.fullname 
-                                ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' 
-                                : 'border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500'
+                            errors.fullname ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500'
                         }`}
                         required
                     />
-                    {errors.fullname && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.fullname}
-                        </p>
-                    )}
+                    {errors.fullname && <p className="text-xs text-red-500 flex items-center gap-1"><X className="w-3 h-3" />{errors.fullname}</p>}
                 </div>
 
-                {/* Champ Poste / Job Title */}
+                {/* Champ Poste */}
                 <div className="space-y-2">
                     <label className="text-xs md:text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <Briefcase className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
@@ -244,52 +221,85 @@ function CollabsForm() {
                         type="text"
                         placeholder="ex: Développeur React / Designer"
                         value={jobTitle}
-                        onChange={handleJobTitleChange}
+                        onChange={(e) => { setJobTitle(e.target.value); validateField('jobTitle', e.target.value) }}
                         className={`w-full border p-2.5 md:p-3 rounded-lg md:rounded-[10px] focus:outline-none focus:ring-2 transition-all text-sm md:text-base ${
-                            errors.jobTitle 
-                                ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' 
-                                : 'border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500'
+                            errors.jobTitle ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500'
                         }`}
                         required
                     />
-                    {errors.jobTitle && (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.jobTitle}
-                        </p>
-                    )}
+                    {errors.jobTitle && <p className="text-xs text-red-500 flex items-center gap-1"><X className="w-3 h-3" />{errors.jobTitle}</p>}
                 </div>
 
-                {/* Champ Lien Profil */}
+                {/* Champ Lien */}
                 <div className="space-y-2">
                     <label className="text-xs md:text-sm font-semibold text-gray-700 flex items-center gap-2">
                         <Link className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
-                        Lien du profil (LinkedIn / Portfolio) <span className="text-xs font-normal text-gray-400">(optionnel)</span>
+                        Lien du profil <span className="text-xs font-normal text-gray-400">(optionnel)</span>
                     </label>
                     <Input
                         type="url"
                         placeholder="https://..."
                         value={link}
-                        onChange={handleLinkChange}
+                        onChange={(e) => { setLink(e.target.value); validateField('link', e.target.value) }}
                         className={`w-full border p-2.5 md:p-3 rounded-lg md:rounded-[10px] focus:outline-none focus:ring-2 transition-all text-sm md:text-base ${
-                            errors.link 
-                                ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' 
-                                : 'border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500'
+                            errors.link ? 'border-red-300 focus:ring-red-500/20 focus:border-red-500' : 'border-gray-200 focus:ring-indigo-500/20 focus:border-indigo-500'
                         }`}
                     />
                     {errors.link ? (
-                        <p className="text-xs text-red-500 flex items-center gap-1">
-                            <X className="w-3 h-3" />
-                            {errors.link}
-                        </p>
+                        <p className="text-xs text-red-500 flex items-center gap-1"><X className="w-3 h-3" />{errors.link}</p>
                     ) : (
-                        <p className="text-xs text-gray-400">
-                            Format attendu : https://linkedin.com/in/...
-                        </p>
+                        <p className="text-xs text-gray-400">Format attendu : https://linkedin.com/in/...</p>
                     )}
                 </div>
 
-                {/* Boutons d'action */}
+                {/* Champ Image */}
+                <div className="space-y-2">
+                    <label className="text-xs md:text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <Upload className="w-4 h-4 md:w-5 md:h-5 text-indigo-500" />
+                        Photo du collaborateur <span className="text-xs font-normal text-gray-400">(optionnel)</span>
+                    </label>
+                    <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-100 border-2 border-dashed border-gray-200 flex items-center justify-center overflow-hidden relative group shrink-0">
+                            {previewUrl ? (
+                                <>
+                                    <Img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                                    <button
+                                        type="button"
+                                        onClick={clearImage}
+                                        className="absolute inset-0 bg-black/40 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        title="Supprimer la photo"
+                                    >
+                                        <X className="w-4 h-4" />
+                                    </button>
+                                </>
+                            ) : (
+                                <UserPlus className="w-6 h-6 md:w-8 md:h-8 text-gray-300" />
+                            )}
+                        </div>
+                        <label className="cursor-pointer bg-white border border-gray-300 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all">
+                            Parcourir...
+                            <input
+                                ref={fileInputRef}
+                                type="file"
+                                className="hidden"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+                        </label>
+                        {previewUrl && (
+                            <button
+                                type="button"
+                                onClick={clearImage}
+                                className="text-xs text-red-500 hover:text-red-600 font-medium"
+                            >
+                                Supprimer
+                            </button>
+                        )}
+                    </div>
+                    <p className="text-[10px] md:text-xs text-gray-400">PNG, JPG jusqu'à 2MB</p>
+                </div>
+
+                {/* Boutons */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 pt-5 md:pt-6 border-t border-gray-100 mt-6 md:mt-8">
                     <Button
                         type="button"
@@ -298,17 +308,6 @@ function CollabsForm() {
                     >
                         Annuler
                     </Button>
-                    
-                    {(fullname || jobTitle || link) && !isEditMode && (
-                        <Button
-                            type="button"
-                            onClick={handleReset}
-                            className="w-full sm:w-auto flex-1 sm:flex-none px-6 py-2.5 md:py-3 border border-gray-200 rounded-lg md:rounded-xl text-gray-600 hover:bg-gray-50 transition-colors text-sm md:text-base"
-                        >
-                            Réinitialiser
-                        </Button>
-                    )}
-                    
                     <Button
                         type="submit"
                         disabled={loading || Object.keys(errors).length > 0}
